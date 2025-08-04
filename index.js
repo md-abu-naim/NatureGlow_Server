@@ -63,6 +63,27 @@ async function run() {
       res.send(result)
     })
 
+    app.patch('/product/:id', async(req, res) => {
+      const id = req.params.id
+      const query = {_id: new ObjectId(id)}
+      const product = req.body
+      const options = {upsert: true}
+      const updatedProduct = {
+        $set:{
+          name: product.name,
+          price: product.price,
+          category: product.category,
+          status: product.status,
+          image: product.image,
+          shortBio: product.shortBio,
+          description: product.description,
+          features: product.features,
+        }
+      }
+      const result = await productsCollection.updateOne(query, updatedProduct, options)
+      res.send(result)
+    })
+
     // Delete Product on Database
     app.delete('/product/:id', async(req, res) => {
       const id = req.params.id
