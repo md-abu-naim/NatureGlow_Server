@@ -1,12 +1,19 @@
 const express = require('express')
 const cors = require('cors')
 require('dotenv').config()
+const { MongoClient, ServerApiVersion } = require('mongodb');
+
 const app = express()
+const port = process.env.PORT || 3000
 
-const port = 3000
-
-
-
+// Middleware
+const corsOptions = {
+  origin: ['http://localhost:5173', 'http://localhost:5174', 'https://natureglow-740e8.web.app', 'https://natureglow-740e8.firebaseapp.com'],
+  Credential: true,
+  optionSuccessStatus: 200
+}
+app.use(cors(corsOptions))
+app.use(express.json())
 
 const uri = "mongodb+srv://NatureGlow:4YqKmdVPF96wQYai@cluster0.zyfftle.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
 
@@ -39,5 +46,5 @@ app.get('/', (req, res) => {
 })
 
 app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`)
+  console.log(`NatureGlow is running on port ${port}`)
 })
