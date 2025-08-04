@@ -33,19 +33,14 @@ async function run() {
     
     const productsCollection = client.db('NatureGlow').collection('products')
 
+    // Get All Products
     app.get('/products', async(req, res) => {
       const result = await productsCollection.find().toArray()
       console.log(result);
       res.send(result)
     })
 
-    app.get('/product/:id', async(req, res) => {
-      const id = req.params.id
-      const query = {_id: new ObjectId(id)}
-      const result = await productsCollection.findOne(query)
-      res.send(result)
-    })
-    
+    // Get Products by Category
     app.get('/products/:category', async(req, res) => {
       const category = req.params.category
       const query = {category: category}
@@ -53,6 +48,20 @@ async function run() {
       res.send(result)
     })
 
+    // Get Product by ID
+    app.get('/product/:id', async(req, res) => {
+      const id = req.params.id
+      const query = {_id: new ObjectId(id)}
+      const result = await productsCollection.findOne(query)
+      res.send(result)
+    })
+
+    // Add Product on Database
+    app.post('/product', async(req, res) => {
+      const product = req.body
+      const result = await productsCollection.insertOne(product)
+      res.send(result)
+    })
 
     // Send a ping to confirm a successful connection
     // await client.db("admin").command({ ping: 1 });
