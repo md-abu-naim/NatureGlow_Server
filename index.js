@@ -30,46 +30,46 @@ async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
     // await client.connect();
-    
+
     const productsCollection = client.db('NatureGlow').collection('products')
 
     // Get All Products
-    app.get('/products', async(req, res) => {
+    app.get('/products', async (req, res) => {
       const result = await productsCollection.find().toArray()
       console.log(result);
       res.send(result)
     })
 
     // Get Products by Category
-    app.get('/products/:category', async(req, res) => {
+    app.get('/products/:category', async (req, res) => {
       const category = req.params.category
-      const query = {category: category}
+      const query = { category: category }
       const result = await productsCollection.find(query).toArray()
       res.send(result)
     })
 
     // Get Product by ID
-    app.get('/product/:id', async(req, res) => {
+    app.get('/product/:id', async (req, res) => {
       const id = req.params.id
-      const query = {_id: new ObjectId(id)}
+      const query = { _id: new ObjectId(id) }
       const result = await productsCollection.findOne(query)
       res.send(result)
     })
 
     // Add Product on Database
-    app.post('/product', async(req, res) => {
+    app.post('/product', async (req, res) => {
       const product = req.body
       const result = await productsCollection.insertOne(product)
       res.send(result)
     })
 
-    app.patch('/product/:id', async(req, res) => {
+    app.put('/product/:id', async (req, res) => {
       const id = req.params.id
-      const query = {_id: new ObjectId(id)}
+      const query = { _id: new ObjectId(id) }
       const product = req.body
-      const options = {upsert: true}
+      const options = { upsert: true }
       const updatedProduct = {
-        $set:{
+        $set: {
           name: product.name,
           price: product.price,
           category: product.category,
@@ -85,9 +85,9 @@ async function run() {
     })
 
     // Delete Product on Database
-    app.delete('/product/:id', async(req, res) => {
+    app.delete('/product/:id', async (req, res) => {
       const id = req.params.id
-      const query = {_id: new ObjectId(id)}
+      const query = { _id: new ObjectId(id) }
       const result = await productsCollection.deleteOne(query)
       res.send(result)
     })
