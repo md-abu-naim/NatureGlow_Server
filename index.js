@@ -64,8 +64,10 @@ async function run() {
 
     // Get Products by Category
     app.get('/products/:category', async (req, res) => {
+      const search = req.query.search?.trim()
       const category = req.params.category
-      const query = { category: category }
+      let query = { category: category }
+      if(search) query.name = { $regex: `${search}`, $options: 'i'}
       const result = await productsCollection.find(query).toArray()
       res.send(result)
     })
