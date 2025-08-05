@@ -64,11 +64,19 @@ async function run() {
 
     // Get Products by Category
     app.get('/products/:category', async (req, res) => {
-      const search = req.query.search?.trim()
       const category = req.params.category
+      const search = req.query.search?.trim()
+      const sort = req.query.sort
       let query = { category: category }
+      let sortCondition = {}
       if(search) query.name = { $regex: `${search}`, $options: 'i'}
-      const result = await productsCollection.find(query).toArray()
+      if(sort){
+        if(sort === 'price_asc') sortCondition = {price: 1}
+        if(sort === 'price-dsc') sortCondition = {price: - 1}
+        if(sort === 'newest') sortCondition = {createdAt: - 1}
+        if(sort === 'best') sortCondition = {totalSold: - 1}
+      }
+      const result = await productsCollection.find(query).sort(sortCondition).toArray()
       res.send(result)
     })
 
