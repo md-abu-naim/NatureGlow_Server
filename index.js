@@ -36,19 +36,29 @@ async function run() {
     // Get All Products
     app.get('/products', async (req, res) => {
       const search = req.query.search?.trim()
+      const sort = req.query.sort
       let query = {}
-      if(search){
-         query = {
-        name: { $regex: `${search}`, $options: 'i'}
+      let sortCondition = {}
+      if(search) query = { name: { $regex: `${search}`, $options: 'i'} }
+      if(sort){
+        if(sort === 'price_asc') sortCondition = {price: 1}
+        if(sort === 'price-dsc') sortCondition = {price: - 1}
+        if(sort === 'newest') sortCondition = {createdAt: - 1}
+        if(sort === 'best') sortCondition = {totalSold: - 1}
       }
-      }
-      const result = await productsCollection.find(query).toArray()
+      const result = await productsCollection.find(query).sort(sortCondition).toArray()
       res.send(result)
     })
     
     // Best Selling Products
     app.get('/products/best', async (req, res) => {
       const result = await productsCollection.find().sort({totalSold: - 1}).limit(8).toArray()
+      res.send(result)
+    })
+
+    // New Products for New Arrivals
+    app.get('/products/new', async (req, res) => {
+      const result = await productsCollection.find().sort({createdAt: - 1}).limit(8).toArray()
       res.send(result)
     })
 
