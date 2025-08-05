@@ -35,8 +35,20 @@ async function run() {
 
     // Get All Products
     app.get('/products', async (req, res) => {
-      const result = await productsCollection.find().toArray()
-      console.log(result);
+      const search = req.query.search?.trim()
+      let query = {}
+      if(search){
+         query = {
+        name: { $regex: `${search}`, $options: 'i'}
+      }
+      }
+      const result = await productsCollection.find(query).toArray()
+      res.send(result)
+    })
+    
+    // Best Selling Products
+    app.get('/products/best', async (req, res) => {
+      const result = await productsCollection.find().sort({totalSold: - 1}).limit(8).toArray()
       res.send(result)
     })
 
