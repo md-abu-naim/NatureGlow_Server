@@ -37,13 +37,14 @@ async function run() {
     app.get('/products', async (req, res) => {
       const category = req.query.category
       const search = req.query.search?.trim()
-      // const minPrice = 0
       const maxPrice = req.query.price && parseFloat(req.query.price)
+      const status = req.query.status
       const sort = req.query.sort
       let query = {}
       let sortCondition = {}
-      if(maxPrice) query.price = {  $lte: maxPrice}
-      if(category) query.category = { $in: category.split(',')}
+      if (status) query.status = { $in: status.split(',') }
+      if (maxPrice) query.price = { $lte: maxPrice }
+      if (category) query.category = { $in: category.split(',') }
       if (search) query = { name: { $regex: `${search}`, $options: 'i' } }
       if (sort) {
         if (sort === 'price_asc') sortCondition = { price: 1 }
