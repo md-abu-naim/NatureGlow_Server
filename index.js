@@ -35,6 +35,7 @@ async function run() {
 
     // Get All Products
     app.get('/products', async (req, res) => {
+      const category = req.query.category
       const search = req.query.search?.trim()
       const sort = req.query.sort
       let query = {}
@@ -46,6 +47,7 @@ async function run() {
         if (sort === 'newest') sortCondition = { createdAt: - 1 }
         if (sort === 'best') sortCondition = { totalSold: - 1 }
       }
+      if(category) query.category = { $in: category.split(',')}
       const result = await productsCollection.find(query).sort(sortCondition).toArray()
       res.send(result)
     })
