@@ -34,7 +34,7 @@ async function run() {
     const productsCollection = client.db('NatureGlow').collection('products')
     const ordersCollection = client.db('NatureGlow').collection('orders')
 
-    // Get All Products
+    // Get Products
     app.get('/products', async (req, res) => {
       const { category, status, sort } = req.query.category
       const search = req.query.search?.trim()
@@ -60,7 +60,7 @@ async function run() {
       res.send({ products, totalpage: Math.ceil(total / limit), currentpage: page })
     })
 
-    // Best Selling Products
+    // Get All Products
     app.get('/all-products', async (req, res) => {
       const result = await productsCollection.find().toArray()
       res.send(result)
@@ -72,13 +72,13 @@ async function run() {
       res.send(result)
     })
 
-    // New Products for New Arrivals
+    // Get New Products for New Arrivals
     app.get('/products/new', async (req, res) => {
       const result = await productsCollection.find().sort({ createdAt: - 1 }).limit(8).toArray()
       res.send(result)
     })
 
-    // Get Products by Category
+    // Get Products By Category
     app.get('/products/:category', async (req, res) => {
       const category = req.params.category
       const search = req.query.search?.trim()
@@ -96,7 +96,7 @@ async function run() {
       res.send(result)
     })
 
-    // Get Product by ID
+    // Get Product By ID
     app.get('/product/:id', async (req, res) => {
       const id = req.params.id
       const query = { _id: new ObjectId(id) }
@@ -111,6 +111,7 @@ async function run() {
       res.send(result)
     })
 
+    // Update Single Product
     app.put('/product/:id', async (req, res) => {
       const id = req.params.id
       const query = { _id: new ObjectId(id) }
@@ -132,7 +133,7 @@ async function run() {
       res.send(result)
     })
 
-    // Delete Product on Database
+    // Delete Product From Database
     app.delete('/product/:id', async (req, res) => {
       const id = req.params.id
       const query = { _id: new ObjectId(id) }
@@ -143,23 +144,39 @@ async function run() {
 
     // Order Route Start Here
     // Get All Orders
-    app.get('/orders', async(req, res) => {
+    app.get('/orders', async (req, res) => {
       const result = await ordersCollection.find().toArray()
       res.send(result)
     })
 
-    // Get Single Order By Id
-    app.get('/order/:id', async(req, res) => {
+    // Get Single Order By ID
+    app.get('/order/:id', async (req, res) => {
       const id = req.params.id
-      const query = {_id: new ObjectId(id)}
+      const query = { _id: new ObjectId(id) }
       const result = await ordersCollection.findOne(query)
       res.send(result)
     })
 
+    // Add Product on Database
+    app.post('/order', async (req, res) => {
+      const order = req.body
+      const products = order?.products
+      const result = await ordersCollection.insertOne(order)
+      const productUpdates = products.map(product => {
+        productsCollection.updateOne(
+          { _id: new ObjectId(product._id) },
+          { $inc: { totalSold: 1 } }
+        )
+      })
+
+      await Promise.all(productUpdates)
+      res.send(result)
+    })
+
     // Delete Order
-    app.delete('/order/:id', async(req, res) => {
+    app.delete('/order/:id', async (req, res) => {
       const id = req.params.id
-      const query = {_id: new ObjectId(id)}
+      const query = { _id: new ObjectId(id) }
       const result = await ordersCollection.deleteOne(query)
       res.send(result)
     })
