@@ -40,20 +40,25 @@ async function run() {
       const maxPrice = req.query.price && parseFloat(req.query.price)
       const status = req.query.status
       const sort = req.query.sort
+      const page = parseInt(req.query.page) || 1
+      const limit = parseInt(req.query.limit) || 6
+      const skip = (page - 1) * limit
+
       let query = {}
       let sortCondition = {}
       if (status) query.status = { $in: status.split(',') }
       if (maxPrice) query.price = { $lte: maxPrice }
       if (category) query.category = { $in: category.split(',') }
-      if (search) query = { name: { $regex: `${search}`, $options: 'i' } }
+      if (search) query.name = { $regex: `${search}`, $options: 'i' }
       if (sort) {
         if (sort === 'price_asc') sortCondition = { price: 1 }
         if (sort === 'price-dsc') sortCondition = { price: - 1 }
         if (sort === 'newest') sortCondition = { createdAt: - 1 }
         if (sort === 'best') sortCondition = { totalSold: - 1 }
       }
-      const result = await productsCollection.find(query).sort(sortCondition).toArray()
-      res.send(result)
+      const total = await productsCollection.countDocuments(query)
+      const products = await productsCollection.find(query).sort(sortCondition).skip(skip).limit(limit).toArray()
+      res.send({products, totalpage: Math.ceil(total / limit), currentpage: page})
     })
 
     // Best Selling Products
