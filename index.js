@@ -35,11 +35,9 @@ async function run() {
 
     // Get All Products
     app.get('/products', async (req, res) => {
-      const category = req.query.category
+      const { category, status, sort } = req.query.category
       const search = req.query.search?.trim()
       const maxPrice = req.query.price && parseFloat(req.query.price)
-      const status = req.query.status
-      const sort = req.query.sort
       const page = parseInt(req.query.page) || 1
       const limit = parseInt(req.query.limit) || 6
       const skip = (page - 1) * limit
@@ -59,6 +57,12 @@ async function run() {
       const total = await productsCollection.countDocuments(query)
       const products = await productsCollection.find(query).sort(sortCondition).skip(skip).limit(limit).toArray()
       res.send({ products, totalpage: Math.ceil(total / limit), currentpage: page })
+    })
+
+    // Best Selling Products
+    app.get('/all-products', async (req, res) => {
+      const result = await productsCollection.find().toArray()
+      res.send(result)
     })
 
     // Best Selling Products
