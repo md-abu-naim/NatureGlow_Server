@@ -32,6 +32,7 @@ async function run() {
     // await client.connect();
 
     const productsCollection = client.db('NatureGlow').collection('products')
+    const ordersCollection = client.db('NatureGlow').collection('orders')
 
     // Get All Products
     app.get('/products', async (req, res) => {
@@ -136,6 +137,14 @@ async function run() {
       const id = req.params.id
       const query = { _id: new ObjectId(id) }
       const result = await productsCollection.deleteOne(query)
+      res.send(result)
+    })
+
+
+    // Order Route Start Here
+    // Get All Orders
+    app.get('/orders', async(req, res) => {
+      const result = await ordersCollection.find().toArray()
       res.send(result)
     })
 
