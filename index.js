@@ -58,7 +58,7 @@ async function run() {
       }
       const total = await productsCollection.countDocuments(query)
       const products = await productsCollection.find(query).sort(sortCondition).skip(skip).limit(limit).toArray()
-      res.send({products, totalpage: Math.ceil(total / limit), currentpage: page})
+      res.send({ products, totalpage: Math.ceil(total / limit), currentpage: page })
     })
 
     // Best Selling Products
