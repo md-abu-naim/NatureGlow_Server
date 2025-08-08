@@ -33,6 +33,14 @@ async function run() {
 
     const productsCollection = client.db('NatureGlow').collection('products')
     const ordersCollection = client.db('NatureGlow').collection('orders')
+    const usersCollection = client.db('NatureGlow').collection('users')
+
+
+    // Get All Users
+    app.get('/users', async(req, res) => {
+      const result = await usersCollection.find().toArray()
+      res.send(result)
+    })
 
     // Get Products
     app.get('/products', async (req, res) => {
