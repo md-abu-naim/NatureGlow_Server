@@ -173,6 +173,23 @@ async function run() {
       res.send(result)
     })
 
+    // Update Single Order By ID
+    app.patch('/update_order/:id', async(req, res) => {
+      const id = req.params.id
+      const query = {_id: new ObjectId(id)}
+      const options = { upsert: true}
+      const order = req.body
+      const updatedOrder = {
+        $set: {
+          paymentStatus: order.paymentStatus,
+          orderStatus: order.orderStatus
+        }
+      }
+      const result = await ordersCollection.updateOne(query, updatedOrder, options)
+      console.log(id, query, order, result);
+      res.send(result)
+    })
+
     // Delete Order
     app.delete('/order/:id', async (req, res) => {
       const id = req.params.id
