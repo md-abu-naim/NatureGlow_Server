@@ -174,10 +174,10 @@ async function run() {
     })
 
     // Update Single Order By ID
-    app.patch('/update_order/:id', async(req, res) => {
+    app.patch('/update_order/:id', async (req, res) => {
       const id = req.params.id
-      const query = {_id: new ObjectId(id)}
-      const options = { upsert: true}
+      const query = { _id: new ObjectId(id) }
+      const options = { upsert: true }
       const order = req.body
       const updatedOrder = {
         $set: {
