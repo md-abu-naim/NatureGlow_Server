@@ -37,10 +37,10 @@ async function run() {
 
 
     // Get All Users
-    app.get('/users', async(req, res) => {
+    app.get('/users', async (req, res) => {
       const search = req.query.search?.trim()
       const query = {}
-      if(search) query.name = {$regex: `${search}`, $options: 'i'}
+      if (search) query.name = { $regex: `${search}`, $options: 'i' }
       const result = await usersCollection.find(query).toArray()
       res.send(result)
     })
