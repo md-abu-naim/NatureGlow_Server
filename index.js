@@ -45,6 +45,21 @@ async function run() {
       res.send(result)
     })
 
+    // Update Single User By Id
+    app.patch('/user/:id', async(req, res) => {
+      const id = req.params.id
+      const query = {_id: new ObjectId(id)}
+      const options = {upsert: true}
+      const user = req.body
+      const updatedUser = {
+        $set: {
+          role: user.role
+        }
+      }
+      const result = await usersCollection.updateOne(query, updatedUser, options)
+      res.send(result)
+    })
+
     // Get Products
     app.get('/products', async (req, res) => {
       const { category, status, sort } = req.query.category
