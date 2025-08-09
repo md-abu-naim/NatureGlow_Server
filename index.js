@@ -60,6 +60,17 @@ async function run() {
       res.send(result)
     })
 
+    // Delete Single User By ID
+    app.delete('/user/:id', async(req, res) => {
+      const id = req.params.id
+      const query = {_id: new ObjectId(id)}
+      const result = await usersCollection.deleteOne(query)
+      res.send(result)
+    })
+
+
+
+    // Product Rout Start Here
     // Get Products
     app.get('/products', async (req, res) => {
       const { category, status, sort } = req.query.category
@@ -166,6 +177,7 @@ async function run() {
       const result = await productsCollection.deleteOne(query)
       res.send(result)
     })
+
 
 
     // Order Route Start Here
