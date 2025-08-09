@@ -45,11 +45,21 @@ async function run() {
       res.send(result)
     })
 
+    // Post Single User
+    app.post('/user', async (req, res) => {
+      const user = req.body
+      const query = { email: user?.email }
+      const axistingUser = await usersCollection.findOne(query)
+      if (axistingUser) return res.send({ message: 'User Already axists', insertedId: null })
+      const result = await usersCollection.insertOne(user)
+      res.send(result)
+    })
+
     // Update Single User By Id
-    app.patch('/user/:id', async(req, res) => {
+    app.patch('/user/:id', async (req, res) => {
       const id = req.params.id
-      const query = {_id: new ObjectId(id)}
-      const options = {upsert: true}
+      const query = { _id: new ObjectId(id) }
+      const options = { upsert: true }
       const user = req.body
       const updatedUser = {
         $set: {
@@ -61,9 +71,9 @@ async function run() {
     })
 
     // Delete Single User By ID
-    app.delete('/user/:id', async(req, res) => {
+    app.delete('/user/:id', async (req, res) => {
       const id = req.params.id
-      const query = {_id: new ObjectId(id)}
+      const query = { _id: new ObjectId(id) }
       const result = await usersCollection.deleteOne(query)
       res.send(result)
     })
