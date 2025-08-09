@@ -45,25 +45,43 @@ async function run() {
       res.send(result)
     })
 
+    app.get('/users/:email', async(req, res) => {
+      const email = req.params.email
+      const query = {email: email}
+      const result = await usersCollection.findOne(query)
+      res.send(result)
+    })
+
     // Post Single User
     app.post('/user', async (req, res) => {
       const user = req.body
       const query = { email: user?.email }
       const axistingUser = await usersCollection.findOne(query)
-      if (axistingUser) return res.send({ message: 'User Already axists', insertedId: null })
+      if (axistingUser) {
+        const updatedOrder = {
+          $set: {
+            status: "Active",
+            lastLogin: new Date().toLocaleDateString()
+          }
+        }
+        const result = await usersCollection.updateOne(query, updatedOrder)
+        return res.send(result)
+      }
       const result = await usersCollection.insertOne(user)
       res.send(result)
     })
 
     // Update Single User By Id
-    app.patch('/user/:id', async (req, res) => {
+    app.put('/user/:id', async (req, res) => {
       const id = req.params.id
       const query = { _id: new ObjectId(id) }
-      const options = { upsert: true }
+      const options = { upsert: false }
       const user = req.body
       const updatedUser = {
         $set: {
-          role: user.role
+          role: user.role,
+          status: user.status,
+          lastLogin: user.lastLogin
         }
       }
       const result = await usersCollection.updateOne(query, updatedUser, options)
