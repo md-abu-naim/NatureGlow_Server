@@ -61,7 +61,7 @@ async function run() {
       const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '100d' })
       res.cookie('token', token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production', 
+        secure: process.env.NODE_ENV === 'production',
         sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
       })
       res.send({ success: true, })
@@ -88,7 +88,7 @@ async function run() {
       res.send(result)
     })
 
-    app.get('/user/:email', verifyToken, async (req, res) => {
+    app.get('/user/:email', async (req, res) => {
       const email = req.params.email
       const query = { email: email }
       const result = await usersCollection.findOne(query)
