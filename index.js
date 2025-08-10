@@ -107,7 +107,7 @@ async function run() {
     // Product Rout Start Here
     // Get Products
     app.get('/products', async (req, res) => {
-      const { category, status, sort } = req.query.category
+      const { category, status, sort } = req.query
       const search = req.query.search?.trim()
       const maxPrice = req.query.price && parseFloat(req.query.price)
       const page = parseInt(req.query.page) || 1
@@ -116,6 +116,7 @@ async function run() {
 
       let query = {}
       let sortCondition = {}
+      console.log(sort);
       if (status) query.status = { $in: status.split(',') }
       if (maxPrice) query.price = { $lte: maxPrice }
       if (category) query.category = { $in: category.split(',') }
