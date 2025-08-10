@@ -272,9 +272,17 @@ async function run() {
 
 
     // Review Rout Start Here
-    // Get All Review
+    // Get All Reviews
     app.get('/reviews', async(req, res) => {
       const result = await reviewsCollection.find().toArray()
+      res.send(result)
+    })
+
+    // Get Product-based Reviews
+    app.get('/reviews/:product_id', async(req, res) => {
+      const product_id = req.params.product_id
+      const query = {product_id: product_id}
+      const result = await reviewsCollection.find(query).toArray()
       res.send(result)
     })
 
