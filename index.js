@@ -11,7 +11,7 @@ const port = process.env.PORT || 3000
 // Middleware
 const corsOptions = {
   origin: ['http://localhost:5173', 'http://localhost:5174', 'https://natureglow-740e8.web.app', 'https://natureglow-740e8.firebaseapp.com'],
-  Credential: true,
+  credentials: true,
   optionSuccessStatus: 200
 }
 app.use(cors(corsOptions))
@@ -88,7 +88,7 @@ async function run() {
       res.send(result)
     })
 
-    app.get('/users/:email', verifyToken, async (req, res) => {
+    app.get('/user/:email', verifyToken, async (req, res) => {
       const email = req.params.email
       const query = { email: email }
       const result = await usersCollection.findOne(query)
@@ -174,7 +174,7 @@ async function run() {
     })
 
     // Get All Products
-    app.get('/all-products', verifyToken, async (req, res) => {
+    app.get('/all-products', async (req, res) => {
       const result = await productsCollection.find().toArray()
       res.send(result)
     })
@@ -288,7 +288,7 @@ async function run() {
     })
 
     // Update Single Order By ID
-    app.patch('/update_order/:id', verifyToken, async (req, res) => {
+    app.patch('/update_order/:id', async (req, res) => {
       const id = req.params.id
       const query = { _id: new ObjectId(id) }
       const options = { upsert: true }
