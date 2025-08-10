@@ -34,7 +34,7 @@ const verifyToken = (req, res, next) => {
   if (!token) return res.status(401).send({ message: "unauthorized access" })
   if (token) {
     jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
-      if(err){
+      if (err) {
         console.log(err);
         return res.status(401).send({ message: "unauthorized access" })
       }
@@ -55,8 +55,32 @@ async function run() {
     const reviewsCollection = client.db('NatureGlow').collection('reviews')
 
 
+    // Token Route Start Here
+    app.post('/jwt', (req, res) => {
+      const user = req.body
+      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '100d' })
+      res.cookie('token', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+      })
+      res.send({ success: true, })
+    })
+
+    // Token Remove Route
+    app.post('/logout', (req, res) => {
+      res.clearCookie('token', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+        maxAge: 0
+      })
+      res.send({ success: true, })
+    })
+
+    // User Route Start Here
     // Get All Users
-    app.get('/users', async (req, res) => {
+    app.get('/users', verifyToken, async (req, res) => {
       const search = req.query.search?.trim()
       const query = {}
       if (search) query.name = { $regex: `${search}`, $options: 'i' }
@@ -64,7 +88,7 @@ async function run() {
       res.send(result)
     })
 
-    app.get('/users/:email', async (req, res) => {
+    app.get('/users/:email', verifyToken, async (req, res) => {
       const email = req.params.email
       const query = { email: email }
       const result = await usersCollection.findOne(query)
@@ -72,7 +96,7 @@ async function run() {
     })
 
     // Post Single User
-    app.post('/user', async (req, res) => {
+    app.post('/user', verifyToken, async (req, res) => {
       const user = req.body
       const query = { email: user?.email }
       const axistingUser = await usersCollection.findOne(query)
@@ -91,7 +115,7 @@ async function run() {
     })
 
     // Update Single User By Id
-    app.put('/user/:id', async (req, res) => {
+    app.put('/user/:id', verifyToken, async (req, res) => {
       const id = req.params.id
       const query = { _id: new ObjectId(id) }
       const options = { upsert: true }
@@ -113,7 +137,7 @@ async function run() {
     })
 
     // Delete Single User By ID
-    app.delete('/user/:id', async (req, res) => {
+    app.delete('/user/:id', verifyToken, async (req, res) => {
       const id = req.params.id
       const query = { _id: new ObjectId(id) }
       const result = await usersCollection.deleteOne(query)
@@ -150,7 +174,7 @@ async function run() {
     })
 
     // Get All Products
-    app.get('/all-products', async (req, res) => {
+    app.get('/all-products', verifyToken, async (req, res) => {
       const result = await productsCollection.find().toArray()
       res.send(result)
     })
@@ -194,14 +218,14 @@ async function run() {
     })
 
     // Add Product on Database
-    app.post('/product', async (req, res) => {
+    app.post('/product', verifyToken, async (req, res) => {
       const product = req.body
       const result = await productsCollection.insertOne(product)
       res.send(result)
     })
 
     // Update Single Product
-    app.put('/product/:id', async (req, res) => {
+    app.put('/product/:id', verifyToken, async (req, res) => {
       const id = req.params.id
       const query = { _id: new ObjectId(id) }
       const product = req.body
@@ -223,7 +247,7 @@ async function run() {
     })
 
     // Delete Product From Database
-    app.delete('/product/:id', async (req, res) => {
+    app.delete('/product/:id', verifyToken, async (req, res) => {
       const id = req.params.id
       const query = { _id: new ObjectId(id) }
       const result = await productsCollection.deleteOne(query)
@@ -234,13 +258,13 @@ async function run() {
 
     // Order Route Start Here
     // Get All Orders
-    app.get('/orders', async (req, res) => {
+    app.get('/orders', verifyToken, async (req, res) => {
       const result = await ordersCollection.find().toArray()
       res.send(result)
     })
 
     // Get Single Order By ID
-    app.get('/order/:id', async (req, res) => {
+    app.get('/order/:id', verifyToken, async (req, res) => {
       const id = req.params.id
       const query = { _id: new ObjectId(id) }
       const result = await ordersCollection.findOne(query)
@@ -264,7 +288,7 @@ async function run() {
     })
 
     // Update Single Order By ID
-    app.patch('/update_order/:id', async (req, res) => {
+    app.patch('/update_order/:id', verifyToken, async (req, res) => {
       const id = req.params.id
       const query = { _id: new ObjectId(id) }
       const options = { upsert: true }
@@ -281,7 +305,7 @@ async function run() {
     })
 
     // Delete Order
-    app.delete('/order/:id', async (req, res) => {
+    app.delete('/order/:id', verifyToken, async (req, res) => {
       const id = req.params.id
       const query = { _id: new ObjectId(id) }
       const result = await ordersCollection.deleteOne(query)
