@@ -1,5 +1,7 @@
 const express = require('express')
 const cors = require('cors')
+const jwt = require('jsonwebtoken')
+const cookieParser = require('cookie-parser')
 require('dotenv').config()
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
@@ -14,6 +16,7 @@ const corsOptions = {
 }
 app.use(cors(corsOptions))
 app.use(express.json())
+app.use(cookieParser())
 
 const uri = `mongodb+srv://${process.env.USER_NAME}:${process.env.USER_PASS}@cluster0.zyfftle.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
@@ -25,6 +28,21 @@ const client = new MongoClient(uri, {
     deprecationErrors: true,
   }
 });
+
+const verifyToken = (req, res, next) => {
+  const token = req.cookies?.token
+  if (!token) return res.status(401).send({ message: "unauthorized access" })
+  if (token) {
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+      if(err){
+        console.log(err);
+        return res.status(401).send({ message: "unauthorized access" })
+      }
+      req.user = decoded
+      next()
+    })
+  }
+}
 
 async function run() {
   try {
@@ -116,7 +134,6 @@ async function run() {
 
       let query = {}
       let sortCondition = {}
-      console.log(sort);
       if (status) query.status = { $in: status.split(',') }
       if (maxPrice) query.price = { $lte: maxPrice }
       if (category) query.category = { $in: category.split(',') }
@@ -274,22 +291,22 @@ async function run() {
 
     // Review Rout Start Here
     // Get All Reviews
-    app.get('/reviews', async(req, res) => {
+    app.get('/reviews', async (req, res) => {
       const result = await reviewsCollection.find().toArray()
       res.send(result)
     })
 
     // Get Product-based Reviews
-    app.get('/reviews/:product_id', async(req, res) => {
+    app.get('/reviews/:product_id', async (req, res) => {
       const product_id = req.params.product_id
-      const query = {product_id: product_id}
+      const query = { product_id: product_id }
       const result = await reviewsCollection.find(query).toArray()
       res.send(result)
     })
 
 
     // Post Review on Related Product
-    app.post('/review', async(req, res) => {
+    app.post('/review', async (req, res) => {
       const review = req.body
       const result = await reviewsCollection.insertOne(review)
       res.send(result)
