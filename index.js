@@ -34,6 +34,7 @@ async function run() {
     const productsCollection = client.db('NatureGlow').collection('products')
     const ordersCollection = client.db('NatureGlow').collection('orders')
     const usersCollection = client.db('NatureGlow').collection('users')
+    const reviewsCollection = client.db('NatureGlow').collection('reviews')
 
 
     // Get All Users
@@ -266,6 +267,14 @@ async function run() {
       const id = req.params.id
       const query = { _id: new ObjectId(id) }
       const result = await ordersCollection.deleteOne(query)
+      res.send(result)
+    })
+
+
+    // Review Rout Start Here
+    // Get All Review
+    app.get('/reviews', async(req, res) => {
+      const result = await reviewsCollection.find().toArray()
       res.send(result)
     })
 
