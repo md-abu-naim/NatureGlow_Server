@@ -99,7 +99,19 @@ async function run() {
       res.send(result)
     })
 
-    app.
+    app.get('/user/admin/:email', verifyToken, async(req, res) => {
+      const email = req.params.email
+      if(email !== req.user?.email) {
+        return res.status(403).send({message: 'forbidden access'})
+      }
+      const query = {email: email}
+      const user = await usersCollection.findOne(query)
+      let Admin = false
+      if(user) {
+        Admin = user?.role === 'Admin'
+      }
+      res.send({Admin})
+    })
 
     app.get('/user/:email', async (req, res) => {
       const email = req.params.email
