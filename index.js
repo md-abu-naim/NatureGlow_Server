@@ -44,6 +44,17 @@ const verifyToken = (req, res, next) => {
   }
 }
 
+const verifyAdmin = async(req, res, next) => {
+  const email = req.user?.email
+  const query = {email: email}
+  const user = await usersCollection.findOne(query)
+  const isAdmin = user?.role === "Admin"
+  if(!isAdmin){
+    return res.status(403).send({message: 'forbidden access'})
+  }
+  next()
+}
+
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
@@ -88,6 +99,20 @@ async function run() {
       res.send(result)
     })
 
+    app.get('/user/admin/:email', verifyToken, async(req, res) => {
+      const email = req.params.email
+      if(email !== req.user?.email) {
+        return res.status(403).send({message: 'forbidden access'})
+      }
+      const query = {email: email}
+      const user = await usersCollection.findOne(query)
+      let Admin = false
+      if(user) {
+        Admin = user?.role === 'Admin'
+      }
+      res.send({Admin})
+    })
+
     app.get('/user/:email', async (req, res) => {
       const email = req.params.email
       const query = { email: email }
@@ -96,7 +121,7 @@ async function run() {
     })
 
     // Post Single User
-    app.post('/user', verifyToken, async (req, res) => {
+    app.post('/user', async (req, res) => {
       const user = req.body
       const query = { email: user?.email }
       const axistingUser = await usersCollection.findOne(query)
