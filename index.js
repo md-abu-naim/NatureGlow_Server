@@ -288,6 +288,14 @@ async function run() {
       res.send(result)
     })
 
+    // Get Orders By Email
+    app.get('/orders/:email', verifyToken, async(req, res) => {
+      const email = req.params.email
+      const query = {email: email}
+      const result = await ordersCollection.find(query).toArray()
+      res.send(result)
+    })
+
     // Get Single Order By ID
     app.get('/order/:id', verifyToken, async (req, res) => {
       const id = req.params.id
