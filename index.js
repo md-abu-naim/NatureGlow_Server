@@ -44,17 +44,6 @@ const verifyToken = (req, res, next) => {
   }
 }
 
-const verifyAdmin = async(req, res, next) => {
-  const email = req.user?.email
-  const query = {email: email}
-  const user = await usersCollection.findOne(query)
-  const isAdmin = user?.role === "Admin"
-  if(!isAdmin){
-    return res.status(403).send({message: 'forbidden access'})
-  }
-  next()
-}
-
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
@@ -89,9 +78,21 @@ async function run() {
       res.send({ success: true, })
     })
 
+    // Verify Admin Route
+    const verifyAdmin = async (req, res, next) => {
+      const email = req.user?.email
+      const query = { email: email }
+      const user = await usersCollection.findOne(query)
+      const isAdmin = user?.role === "Admin"
+      if (!isAdmin) {
+        return res.status(403).send({ message: 'forbidden access' })
+      }
+      next()
+    }
+
     // User Route Start Here
     // Get All Users
-    app.get('/users', verifyToken, async (req, res) => {
+    app.get('/users', verifyToken, verifyAdmin,  async (req, res) => {
       const search = req.query.search?.trim()
       const query = {}
       if (search) query.name = { $regex: `${search}`, $options: 'i' }
@@ -99,18 +100,18 @@ async function run() {
       res.send(result)
     })
 
-    app.get('/user/admin/:email', verifyToken, async(req, res) => {
+    app.get('/user/admin/:email', verifyToken, async (req, res) => {
       const email = req.params.email
-      if(email !== req.user?.email) {
-        return res.status(403).send({message: 'forbidden access'})
+      if (email !== req.user?.email) {
+        return res.status(403).send({ message: 'forbidden access' })
       }
-      const query = {email: email}
+      const query = { email: email }
       const user = await usersCollection.findOne(query)
       let Admin = false
-      if(user) {
+      if (user) {
         Admin = user?.role === 'Admin'
       }
-      res.send({Admin})
+      res.send({ Admin })
     })
 
     app.get('/user/:email', async (req, res) => {
@@ -162,7 +163,7 @@ async function run() {
     })
 
     // Delete Single User By ID
-    app.delete('/user/:id', verifyToken, async (req, res) => {
+    app.delete('/user/:id', verifyToken, verifyToken, async (req, res) => {
       const id = req.params.id
       const query = { _id: new ObjectId(id) }
       const result = await usersCollection.deleteOne(query)
@@ -199,7 +200,7 @@ async function run() {
     })
 
     // Get All Products
-    app.get('/all-products', async (req, res) => {
+    app.get('/all-products',verifyToken, verifyAdmin, async (req, res) => {
       const result = await productsCollection.find().toArray()
       res.send(result)
     })
@@ -243,14 +244,14 @@ async function run() {
     })
 
     // Add Product on Database
-    app.post('/product', verifyToken, async (req, res) => {
+    app.post('/product', verifyToken, verifyAdmin, async (req, res) => {
       const product = req.body
       const result = await productsCollection.insertOne(product)
       res.send(result)
     })
 
     // Update Single Product
-    app.put('/product/:id', verifyToken, async (req, res) => {
+    app.put('/product/:id', verifyToken, verifyAdmin, async (req, res) => {
       const id = req.params.id
       const query = { _id: new ObjectId(id) }
       const product = req.body
@@ -272,7 +273,7 @@ async function run() {
     })
 
     // Delete Product From Database
-    app.delete('/product/:id', verifyToken, async (req, res) => {
+    app.delete('/product/:id', verifyToken, verifyAdmin, async (req, res) => {
       const id = req.params.id
       const query = { _id: new ObjectId(id) }
       const result = await productsCollection.deleteOne(query)
@@ -283,15 +284,15 @@ async function run() {
 
     // Order Route Start Here
     // Get All Orders
-    app.get('/orders', verifyToken, async (req, res) => {
+    app.get('/orders', verifyToken, verifyAdmin,  async (req, res) => {
       const result = await ordersCollection.find().toArray()
       res.send(result)
     })
 
     // Get Orders By Email
-    app.get('/orders/:email', verifyToken, async(req, res) => {
+    app.get('/orders/:email', verifyToken, async (req, res) => {
       const email = req.params.email
-      const query = {email: email}
+      const query = { email: email }
       const result = await ordersCollection.find(query).toArray()
       res.send(result)
     })
@@ -338,7 +339,7 @@ async function run() {
     })
 
     // Delete Order
-    app.delete('/order/:id', verifyToken, async (req, res) => {
+    app.delete('/order/:id', verifyToken, verifyAdmin, async (req, res) => {
       const id = req.params.id
       const query = { _id: new ObjectId(id) }
       const result = await ordersCollection.deleteOne(query)
