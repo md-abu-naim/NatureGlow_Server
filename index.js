@@ -122,7 +122,7 @@ async function run() {
     })
 
     // Post Single User
-    app.post('/user', async (req, res) => {
+    app.post('/user', verifyToken, async (req, res) => {
       const user = req.body
       const query = { email: user?.email }
       const axistingUser = await usersCollection.findOne(query)
