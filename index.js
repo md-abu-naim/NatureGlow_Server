@@ -29,21 +29,6 @@ const client = new MongoClient(uri, {
   }
 });
 
-const verifyToken = (req, res, next) => {
-  const token = req.cookies?.token
-  if (!token) return res.status(401).send({ message: "unauthorized access" })
-  if (token) {
-    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
-      if (err) {
-        console.log(err);
-        return res.status(401).send({ message: "unauthorized access" })
-      }
-      req.user = decoded
-      next()
-    })
-  }
-}
-
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
@@ -54,6 +39,20 @@ async function run() {
     const usersCollection = client.db('NatureGlow').collection('users')
     const reviewsCollection = client.db('NatureGlow').collection('reviews')
 
+    const verifyToken = (req, res, next) => {
+      const token = req.cookies?.token
+      if (!token) return res.status(401).send({ message: "unauthorized access" })
+      if (token) {
+        jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+          if (err) {
+            console.log(err);
+            return res.status(401).send({ message: "unauthorized access" })
+          }
+          req.user = decoded
+          next()
+        })
+      }
+    }
 
     // Token Route Start Here
     app.post('/jwt', (req, res) => {
@@ -92,7 +91,7 @@ async function run() {
 
     // User Route Start Here
     // Get All Users
-    app.get('/users', verifyToken, verifyAdmin,  async (req, res) => {
+    app.get('/users', verifyToken, verifyAdmin, async (req, res) => {
       const search = req.query.search?.trim()
       const query = {}
       if (search) query.name = { $regex: `${search}`, $options: 'i' }
@@ -102,6 +101,7 @@ async function run() {
 
     app.get('/user/admin/:email', verifyToken, async (req, res) => {
       const email = req.params.email
+      console.log(email, req.user?.email);
       if (email !== req.user?.email) {
         return res.status(403).send({ message: 'forbidden access' })
       }
@@ -141,7 +141,7 @@ async function run() {
     })
 
     // Update Single User By Id
-    app.put('/user/:id', verifyToken, async (req, res) => {
+    app.put('/user/:id', async (req, res) => {
       const id = req.params.id
       const query = { _id: new ObjectId(id) }
       const options = { upsert: true }
@@ -200,7 +200,7 @@ async function run() {
     })
 
     // Get All Products
-    app.get('/all-products',verifyToken, verifyAdmin, async (req, res) => {
+    app.get('/all-products', verifyToken, verifyAdmin, async (req, res) => {
       const result = await productsCollection.find().toArray()
       res.send(result)
     })
@@ -284,7 +284,7 @@ async function run() {
 
     // Order Route Start Here
     // Get All Orders
-    app.get('/orders', verifyToken, verifyAdmin,  async (req, res) => {
+    app.get('/orders', verifyToken, verifyAdmin, async (req, res) => {
       const result = await ordersCollection.find().toArray()
       res.send(result)
     })
