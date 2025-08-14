@@ -11,7 +11,7 @@ const port = process.env.PORT || 3000
 // Middleware
 const corsOptions = {
   origin: ['http://localhost:5173', 'http://localhost:5174', 'https://natureglow-740e8.web.app', 'https://natureglow-740e8.firebaseapp.com'],
-  credentials: true,
+  ccredentials: true,
   optionSuccessStatus: 200
 }
 app.use(cors(corsOptions))
