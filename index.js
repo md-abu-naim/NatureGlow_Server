@@ -39,6 +39,7 @@ async function run() {
     const usersCollection = client.db('NatureGlow').collection('users')
     const reviewsCollection = client.db('NatureGlow').collection('reviews')
 
+    // Verify Token Middleware
     const verifyToken = (req, res, next) => {
       const token = req.cookies?.token
       if (!token) return res.status(401).send({ message: "unauthorized access" })
@@ -77,7 +78,7 @@ async function run() {
         .send({ success: true })
     })
 
-    // Verify Admin Route
+    // Verify Admin Middleware
     const verifyAdmin = async (req, res, next) => {
       const email = req.user?.email
       const query = { email: email }
@@ -99,12 +100,12 @@ async function run() {
       res.send(result)
     })
 
-    app.get('/user/admin/:email', async (req, res) => {
+    app.get('/user/admin/:email', verifyToken, async (req, res) => {
       const email = req.params.email
-      // console.log(email, req.user?.email);
-      // if (email !== req.user?.email) {
-      //   return res.status(403).send({ message: 'forbidden access' })
-      // }
+      console.log(email, req.user?.email);
+      if (email !== req.user?.email) {
+        return res.status(403).send({ message: 'forbidden access' })
+      }
       const query = { email: email }
       const user = await usersCollection.findOne(query)
       let Admin = false
