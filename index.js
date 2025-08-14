@@ -11,7 +11,7 @@ const port = process.env.PORT || 3000
 // Middleware
 const corsOptions = {
   origin: ['http://localhost:5173', 'http://localhost:5174', 'https://natureglow-740e8.web.app', 'https://natureglow-740e8.firebaseapp.com'],
-  ccredentials: true,
+  credentials: true,
   optionSuccessStatus: 200
 }
 app.use(cors(corsOptions))
@@ -55,26 +55,26 @@ async function run() {
     }
 
     // Token Route Start Here
-    app.post('/jwt', (req, res) => {
+    app.post('/jwt', async (req, res) => {
       const user = req.body
-      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '100d' })
+      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '30d' })
       res.cookie('token', token, {
         httpOnly: true,
-        secure: true,
-        sameSite: 'none',
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
       })
-      res.send({ success: true, })
+        .send({ success: true })
     })
 
     // Token Remove Route
-    app.post('/logout', (req, res) => {
+    app.get('/logOut', (req, res) => {
       res.clearCookie('token', {
         httpOnly: true,
-        secure: true,
-        sameSite: 'none',
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
         maxAge: 0
       })
-      res.send({ success: true, })
+        .send({ success: true })
     })
 
     // Verify Admin Route
@@ -99,12 +99,12 @@ async function run() {
       res.send(result)
     })
 
-    app.get('/user/admin/:email', verifyToken, async (req, res) => {
+    app.get('/user/admin/:email', async (req, res) => {
       const email = req.params.email
-      console.log(email, req.user?.email);
-      if (email !== req.user?.email) {
-        return res.status(403).send({ message: 'forbidden access' })
-      }
+      // console.log(email, req.user?.email);
+      // if (email !== req.user?.email) {
+      //   return res.status(403).send({ message: 'forbidden access' })
+      // }
       const query = { email: email }
       const user = await usersCollection.findOne(query)
       let Admin = false
