@@ -203,13 +203,11 @@ async function run() {
     // Get All Products
     app.get('/all-products', verifyToken, verifyAdmin, async (req, res) => {
       const search = req.query.search?.trim()
-      const query = []
+      let query = {}
       if (search) {
-        query = {
-          name: { $regex: `${search}`, $options: 'i' }
-        }
+        query = { name: { $regex: search, $options: 'i' } };
       }
-      const result = await productsCollection.find().toArray()
+      const result = await productsCollection.find(query).toArray()
       res.send(result)
     })
 
