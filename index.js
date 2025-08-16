@@ -39,22 +39,8 @@ async function run() {
     const usersCollection = client.db('NatureGlow').collection('users')
     const reviewsCollection = client.db('NatureGlow').collection('reviews')
 
+
     // Verify Token Middleware
-    // const verifyToken = (req, res, next) => {
-    //   const token = req.cookies?.token
-    //   if (!token) return res.status(401).send({ message: "unauthorized access" })
-    //   if (token) {
-    //     jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
-    //       if (err) {
-    //         console.log(err);
-    //         return res.status(401).send({ message: "unauthorized access" })
-    //       }
-    //       req.user = decoded
-    //       next()
-    //     })
-    //   }
-    // }
-    // Current verifyToken
     const verifyToken = (req, res, next) => {
       if (!req.headers.authorization) {
         return res.status(401).send({ message: 'unauthorize access' })
