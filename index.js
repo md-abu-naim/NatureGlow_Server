@@ -74,17 +74,6 @@ async function run() {
       res.send({ token })
     })
 
-    // Token Remove Route
-    // app.get('/logOut', (req, res) => {
-    //   res.clearCookie('token', {
-    //     httpOnly: true,
-    //     secure: process.env.NODE_ENV === 'production',
-    //     sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
-    //     maxAge: 0
-    //   })
-    //     .send({ success: true })
-    // })
-
     // Verify Admin Middleware
     // const verifyAdmin = async (req, res, next) => {
     //   const email = req.user?.email
