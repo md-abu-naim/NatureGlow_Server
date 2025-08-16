@@ -40,32 +40,52 @@ async function run() {
     const reviewsCollection = client.db('NatureGlow').collection('reviews')
 
     // Verify Token Middleware
+    // const verifyToken = (req, res, next) => {
+    //   const token = req.cookies?.token
+    //   if (!token) return res.status(401).send({ message: "unauthorized access" })
+    //   if (token) {
+    //     jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+    //       if (err) {
+    //         console.log(err);
+    //         return res.status(401).send({ message: "unauthorized access" })
+    //       }
+    //       req.user = decoded
+    //       next()
+    //     })
+    //   }
+    // }
     const verifyToken = (req, res, next) => {
-      const token = req.cookies?.token
-      if (!token) return res.status(401).send({ message: "unauthorized access" })
-      if (token) {
-        jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
-          if (err) {
-            console.log(err);
-            return res.status(401).send({ message: "unauthorized access" })
-          }
-          req.user = decoded
-          next()
-        })
+      const authHeader = req.headers.authorization; // "Bearer <token>"
+      if (!authHeader?.startsWith('Bearer ')) {
+        return res.status(401).send({ message: 'unauthorized access' });
       }
-    }
+      const token = authHeader.split(' ')[1];
+
+      jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+        if (err) return res.status(401).send({ message: 'unauthorized access' });
+        req.user = decoded; // { email }
+        next();
+      });
+    };
+
 
     // Token Route Start Here
+    // app.post('/jwt', async (req, res) => {
+    //   const user = req.body
+    //   const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '30d' })
+    //   res.cookie('token', token, {
+    //     httpOnly: true,
+    //     secure: process.env.NODE_ENV === 'production',
+    //     sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+    //   })
+    //     .send({ success: true })
+    // })
     app.post('/jwt', async (req, res) => {
-      const user = req.body
-      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '30d' })
-      res.cookie('token', token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
-      })
-        .send({ success: true })
-    })
+      const user = req.body; // { email }
+      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '30d' });
+      res.send({ token }); // শুধু JSON এ টোকেন ফেরত
+    });
+
 
     // Token Remove Route
     app.get('/logOut', (req, res) => {
@@ -164,7 +184,7 @@ async function run() {
     })
 
     // Delete Single User By ID
-    app.delete('/user/:id', verifyToken, verifyToken, async (req, res) => {
+    app.delete('/user/:id', verifyToken, verifyAdmin, async (req, res) => {
       const id = req.params.id
       const query = { _id: new ObjectId(id) }
       const result = await usersCollection.deleteOne(query)
