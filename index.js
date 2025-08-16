@@ -84,20 +84,7 @@ async function run() {
       res.send(result)
     })
 
-    // app.get('/user/admin/:email', verifyToken, async (req, res) => {
-    //   const email = req.params.email
-    //   console.log(email, req.user?.email);
-    //   if (email !== req.user?.email) {
-    //     return res.status(403).send({ message: 'forbidden access' })
-    //   }
-    //   const query = { email: email }
-    //   const user = await usersCollection.findOne(query)
-    //   let Admin = false
-    //   if (user) {
-    //     Admin = user?.role === 'Admin'
-    //   }
-    //   res.send({ Admin })
-    // })
+    // Get Admin Status by Email
     app.get('/user/admin/:email', verifyToken, async (req, res) => {
       const email = req.params.email;
       if (email !== req.decoded.email) {
@@ -112,7 +99,7 @@ async function run() {
       res.send({ admin });
     })
 
-
+    
     app.get('/user/:email', async (req, res) => {
       const email = req.params.email
       const query = { email: email }
