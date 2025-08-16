@@ -99,7 +99,7 @@ async function run() {
       res.send({ admin });
     })
 
-    
+    // Get Single User By Email
     app.get('/user/:email', async (req, res) => {
       const email = req.params.email
       const query = { email: email }
