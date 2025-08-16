@@ -67,24 +67,7 @@ async function run() {
       next()
     }
 
-
-    // Token Route Start Here
-    // app.post('/jwt', async (req, res) => {
-    //   const user = req.body
-    //   const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '30d' })
-    //   res.cookie('token', token, {
-    //     httpOnly: true,
-    //     secure: process.env.NODE_ENV === 'production',
-    //     sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
-    //   })
-    //     .send({ success: true })
-    // })
-    // app.post('/jwt', async (req, res) => {
-    //   const user = req.body; // { email }
-    //   const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '30d' });
-    //   console.log(token);
-    //   res.send({ token }); // শুধু JSON এ টোকেন ফেরত
-    // });
+    // Token Post Route
     app.post('/jwt', async (req, res) => {
       const user = req.body
       const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' })
