@@ -60,13 +60,11 @@ async function run() {
         return res.status(401).send({ message: 'unauthorize access' })
       }
       const token = req.headers.authorization.split(' ')[1]
-      console.log("v-token",token);
       jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
         if (err) {
           return res.status(401).send({ message: 'unauthorize access' })
         }
         req.decoded = decoded;
-        console.log('v-to decoded');
         next()
       })
     }
@@ -74,11 +72,9 @@ async function run() {
     // Current verifyAdmin
     const verifyAdmin = async (req, res, next) => {
       const email = req.decoded.email
-      console.log("v ad,",email);
       const query = { email: email }
       const user = await usersCollection.findOne(query)
       const isAdmin = user?.role === 'Admin'
-      console.log('v-ad role', isAdmin);
       if (!isAdmin) {
         return res.status(403).send({ message: 'forbidden access' })
       }
@@ -106,7 +102,6 @@ async function run() {
     app.post('/jwt', async (req, res) => {
       const user = req.body
       const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' })
-      console.log('jwt token', token);
       res.send({ token })
     })
 
@@ -159,14 +154,12 @@ async function run() {
     // })
     app.get('/user/admin/:email', verifyToken, async (req, res) => {
       const email = req.params.email;
-      console.log('ad', email, req.decoded.email);
       if (email !== req.decoded.email) {
         return res.status(403).send({ message: 'forbidden access' })
       }
       const query = { email: email };
       const user = await usersCollection.findOne(query);
       let admin = false;
-      console.log('ad', admin);
       if (user) {
         admin = user?.role === 'Admin';
       }
