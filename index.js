@@ -54,19 +54,36 @@ async function run() {
     //     })
     //   }
     // }
+    // Current verifyToken
     const verifyToken = (req, res, next) => {
-      const authHeader = req.headers.authorization; // "Bearer <token>"
-      if (!authHeader?.startsWith('Bearer ')) {
-        return res.status(401).send({ message: 'unauthorized access' });
+      if (!req.headers.authorization) {
+        return res.status(401).send({ message: 'unauthorize access' })
       }
-      const token = authHeader.split(' ')[1];
-
+      const token = req.headers.authorization.split(' ')[1]
+      console.log("v-token",token);
       jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
-        if (err) return res.status(401).send({ message: 'unauthorized access' });
-        req.user = decoded; // { email }
-        next();
-      });
-    };
+        if (err) {
+          return res.status(401).send({ message: 'unauthorize access' })
+        }
+        req.decoded = decoded;
+        console.log('v-to decoded');
+        next()
+      })
+    }
+
+    // Current verifyAdmin
+    const verifyAdmin = async (req, res, next) => {
+      const email = req.decoded.email
+      console.log("v ad,",email);
+      const query = { email: email }
+      const user = await usersCollection.findOne(query)
+      const isAdmin = user?.role === 'Admin'
+      console.log('v-ad role', isAdmin);
+      if (!isAdmin) {
+        return res.status(403).send({ message: 'forbidden access' })
+      }
+      next()
+    }
 
 
     // Token Route Start Here
@@ -80,35 +97,41 @@ async function run() {
     //   })
     //     .send({ success: true })
     // })
+    // app.post('/jwt', async (req, res) => {
+    //   const user = req.body; // { email }
+    //   const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '30d' });
+    //   console.log(token);
+    //   res.send({ token }); // শুধু JSON এ টোকেন ফেরত
+    // });
     app.post('/jwt', async (req, res) => {
-      const user = req.body; // { email }
-      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '30d' });
-      res.send({ token }); // শুধু JSON এ টোকেন ফেরত
-    });
-
-
-    // Token Remove Route
-    app.get('/logOut', (req, res) => {
-      res.clearCookie('token', {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
-        maxAge: 0
-      })
-        .send({ success: true })
+      const user = req.body
+      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' })
+      console.log('jwt token', token);
+      res.send({ token })
     })
 
+    // Token Remove Route
+    // app.get('/logOut', (req, res) => {
+    //   res.clearCookie('token', {
+    //     httpOnly: true,
+    //     secure: process.env.NODE_ENV === 'production',
+    //     sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+    //     maxAge: 0
+    //   })
+    //     .send({ success: true })
+    // })
+
     // Verify Admin Middleware
-    const verifyAdmin = async (req, res, next) => {
-      const email = req.user?.email
-      const query = { email: email }
-      const user = await usersCollection.findOne(query)
-      const isAdmin = user?.role === "Admin"
-      if (!isAdmin) {
-        return res.status(403).send({ message: 'forbidden access' })
-      }
-      next()
-    }
+    // const verifyAdmin = async (req, res, next) => {
+    //   const email = req.user?.email
+    //   const query = { email: email }
+    //   const user = await usersCollection.findOne(query)
+    //   const isAdmin = user?.role === "Admin"
+    //   if (!isAdmin) {
+    //     return res.status(403).send({ message: 'forbidden access' })
+    //   }
+    //   next()
+    // }
 
     // User Route Start Here
     // Get All Users
@@ -120,20 +143,36 @@ async function run() {
       res.send(result)
     })
 
+    // app.get('/user/admin/:email', verifyToken, async (req, res) => {
+    //   const email = req.params.email
+    //   console.log(email, req.user?.email);
+    //   if (email !== req.user?.email) {
+    //     return res.status(403).send({ message: 'forbidden access' })
+    //   }
+    //   const query = { email: email }
+    //   const user = await usersCollection.findOne(query)
+    //   let Admin = false
+    //   if (user) {
+    //     Admin = user?.role === 'Admin'
+    //   }
+    //   res.send({ Admin })
+    // })
     app.get('/user/admin/:email', verifyToken, async (req, res) => {
-      const email = req.params.email
-      console.log(email, req.user?.email);
-      if (email !== req.user?.email) {
+      const email = req.params.email;
+      console.log('ad', email, req.decoded.email);
+      if (email !== req.decoded.email) {
         return res.status(403).send({ message: 'forbidden access' })
       }
-      const query = { email: email }
-      const user = await usersCollection.findOne(query)
-      let Admin = false
+      const query = { email: email };
+      const user = await usersCollection.findOne(query);
+      let admin = false;
+      console.log('ad', admin);
       if (user) {
-        Admin = user?.role === 'Admin'
+        admin = user?.role === 'Admin';
       }
-      res.send({ Admin })
+      res.send({ admin });
     })
+
 
     app.get('/user/:email', async (req, res) => {
       const email = req.params.email
